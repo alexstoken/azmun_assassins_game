@@ -3,10 +3,11 @@
 This program is meant to take in a list of participants and then use some python libraries to run the assassins game for AZMUN
 
 Created by: Alex Stoken 4 Nov 2017
+Made Great Again By: Chris Mason
 Modified: 1 Nov 2017
 """
 import sys, os, re
-import numpy as np
+#import numpy as np
 import smtplib
 import datetime
 import email
@@ -29,7 +30,7 @@ Design outline:
 #ia_email = "internalaffairs@arizonamun.org"
 #ia_password = "makeMUNgreatagain2016"
 
-ia_email = "azmun_assassins@gmail.com"
+ia_email = "azmunassassins@gmail.com"
 ia_password = "arizonamun"
 
 #function from the internet to just send an email from smtp
@@ -198,13 +199,15 @@ def monitor(login, password, ass_list):
         for part in email_message.walk():
             if part.get_content_type() == "text/plain":
                 body = part.get_payload(decode=True)
-                message_content = (email_from, subject, body.decode('utf-8') )
+                message_content = (email_from, subject, body.decode('utf-8'))
+                message_content = subject # testing here 
 
 
     try:
         message_content
     except NameError:
-        return "No new messages"
+        # no new messages
+        return False
     else:
         return message_content
 
@@ -239,7 +242,7 @@ def main():
                 """
 
 #    assassins_list = make_list("/Users/alexstoken/projects/AZMUN/assassins_list.csv")
-    assassins_list = make_list("/small_list.csv");   
+    assassins_list = make_list("small_list.csv");   
     random.shuffle(assassins_list)
     initial_email(assassins_list)
 
@@ -247,8 +250,12 @@ def main():
     while len(assassins_list) > 0:
         assassination_response = monitor(ia_email, ia_password, assassins_list)
 
-        if assassination_response == True:
+        if(assassination_response == False):
+            print("No new messages")
+        else:
+            print(assassination_response)
             for i, name, email, pic in enumerate(assassins_list):
+                print(email)
                 if email == assassination_response: eliminate = i
 
 
@@ -256,8 +263,7 @@ def main():
             respond_to_kill(assassination_response, assassins_list)
             assassins_list.pop(i)
 
-        time.sleep(300)
-
+        time.sleep(5)
 
 
 try:
