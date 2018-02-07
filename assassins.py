@@ -26,8 +26,11 @@ Design outline:
 """
 
 #global variables
-ia_email = "internalaffairs@arizonamun.org"
-ia_password = "makeMUNgreatagain2016"
+#ia_email = "internalaffairs@arizonamun.org"
+#ia_password = "makeMUNgreatagain2016"
+
+ia_email = "azmun_assassins@gmail.com"
+ia_password = "arizonamun"
 
 #function from the internet to just send an email from smtp
 def sendemail(from_addr, to_addr_list, cc_addr_list,
@@ -235,7 +238,8 @@ def main():
                 ('Alex Stoken 2', 'alex.stoken@gmail.com', 'https://drive.google.com/file/d/12ws2m03tiK50zHi1rkgvNRlkWMeiotQy/view?usp=sharing')]
                 """
 
-    assassins_list = make_list("/Users/alexstoken/projects/AZMUN/assassins_list.csv")
+#    assassins_list = make_list("/Users/alexstoken/projects/AZMUN/assassins_list.csv")
+    assassins_list = make_list("/small_list.csv");   
     random.shuffle(assassins_list)
     initial_email(assassins_list)
 
