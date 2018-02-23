@@ -7,7 +7,7 @@ Made Great Again By: Chris Mason
 Modified: 1 Nov 2017
 """
 import sys, os, re
-#import numpy as np
+import numpy as np
 import smtplib
 import datetime
 import email
@@ -17,6 +17,7 @@ import random
 import csv
 import argparse
 import time
+import pandas as pd
 
 """
 Design outline:
@@ -71,35 +72,31 @@ def initial_email(ass_list):
         initial_email_body ="""
         Hello %s,
 
-        Welcome to the AZMUN2k17 edition of Assassins!
+        Welcome to the AZMUN Spring 2k18 edition of Assassins!
 
         Your target is %s.
 
-        Please consult this picture if you need help identifying your target: %s
+        Please consult Facebook or email azmunassassins@gmail.com if you need help identifying your ta
 
-        When you get a kill, you MUST email internalaffairs@arizonamun.org with the following message:
+        When you get a kill, you MUST email azmunassassins@gmail.org (NOTE, new email!!) with the following message:
 
         Subject: Assassins kill
-        Body: _______ has been killed by ________.
+        Body: Killed: _______<-----put the name of the person you assassinated here!
 
         As a reminder, the rules are as follows:
-        1. You MUST use a plastic spoon (I will supply at Giordano's)
-        2. The game begins AFTER Giordanos (~9pm)
+        1. You MUST use a plastic spoon (supply your own)
+        2. The game begins IMMEADIETLY
         3. The game is single elimination
         4. NOBODY can see the assassination (I mean like don't be creepy about it but be stealthy)
         5. If you have a questionable assassination, text me BEFORE sending an email.
 
-        Contact Alex Stoken (480-528-5633, internalaffairs@email.arizona.edu) if you have any questions.
+        Contact Alex Stoken (480-528-5633, internalaffairs@arizonamun.org) if you have any questions.
 
         May the odds be EVER in your favor.
 
         BQ-BA-BD,
 
         Alex "Assassin Master" Stoken
-
-        P.S. So I'm trying this like automated assassins thing and I hope it works
-        but we're going to experiment so sorry this email is coming out late!
-        Love you guys <3
         """ %(name, target_name, next_pic) #target name is just the next name so maybe just d0 [i+1 element]
         sendemail(ia_email, addr_to_list, [],"Welcome to AZMUN Assassins", initial_email_body, ia_email , ia_password )
 
@@ -181,8 +178,6 @@ def monitor(login, password, ass_list):
         # result, email_data = conn.store(num,'-FLAGS','\\Seen')
         # this might work to set flag to seen, if it doesn't already
 
-
-
         raw_email = email_data[0][1]
         raw_email_string = raw_email.decode('utf-8')
         email_message = email.message_from_string(raw_email_string)
@@ -200,7 +195,7 @@ def monitor(login, password, ass_list):
             if part.get_content_type() == "text/plain":
                 body = part.get_payload(decode=True)
                 message_content = (email_from, subject, body.decode('utf-8'))
-                message_content = subject # testing here 
+                #message_content = subject # testing here
 
 
     try:
@@ -215,11 +210,11 @@ def monitor(login, password, ass_list):
 
 def make_list(csv_path):
     csv_tuple_list = []
-    with open(csv_path, 'rb') as f:
+    with open(csv_path, 'rt') as f:
         reader = csv.reader(f)
         for row in reader:
-            csv_tuple_list.append((row[0], row[1], row[2]))
-
+            #csv_tuple_list.append((row[0], row[1], row[2]))
+            csv_tuple_list.append((row[0], row[1]))
     return csv_tuple_list
 
 def message_parser(message, ass_list):
@@ -231,39 +226,66 @@ def message_parser(message, ass_list):
     else:
         return False
 
+def return_list(origin_list, mode):
+    """
+    this function writes the original shuffled assassins order, as well
+    as the updated list of current participants, to a csv and returns
+    the path of the file
+    """
+    if mode == 'original': filename = 'original_ass_list'
+    if mode == 'current': filename = 'latest_ass_list'
+    df = pd.DataFrame(origin_list)
+    #df.to_csv("latest_assassins_list.csv", sep=",", na_rep='', header=False, index=False, index_label=None, mode='w', encoding=None, compression=None, quoting=None, quotechar='"', line_terminator='n', chunksize=None, tupleize_cols=None, date_format=None, doublequote=True, escapechar=None, decimal='.')
+    df.to_excel(filename+ '.xlsx', sheet_name='latest_list', header=['Name', 'Email', 'Photo'], index=False, index_label=None, startrow=0, startcol=0, engine=None, merge_cells=True, encoding=None, inf_rep='inf', verbose=True, freeze_panes=None)
+
+
+
 #make list of tuples with Name, Email address
 def main():
     #start off by figuring out which situation the program is being run in
-    """parser = argparse.ArgumentParser()
-    parser.add_argument('--mode', required=False, choices = ["start", "restart", "reshuffle", "continue"])
-    args = parser.parse_args()
-    assassin_list_test = [('Alex Stoken', 'astoken@email.arizona.edu','https://drive.google.com/file/d/1aX2DzfLG0TEBadx3VvdwGUzafYbKPdrk/view?usp=sharing'),
-                ('Alex Stoken 2', 'alex.stoken@gmail.com', 'https://drive.google.com/file/d/12ws2m03tiK50zHi1rkgvNRlkWMeiotQy/view?usp=sharing')]
-                """
 
-#    assassins_list = make_list("/Users/alexstoken/projects/AZMUN/assassins_list.csv")
-    assassins_list = make_list("small_list.csv");   
-    random.shuffle(assassins_list)
-    initial_email(assassins_list)
+    #assassin_list_test = [('Alex Stoken', 'astoken@email.arizona.edu','https://drive.google.com/file/d/1aX2DzfLG0TEBadx3VvdwGUzafYbKPdrk/view?usp=sharing'),
+    #            ('Alex Stoken 2', 'alex.stoken@gmail.com', 'https://drive.google.com/file/d/12ws2m03tiK50zHi1rkgvNRlkWMeiotQy/view?usp=sharing')]
 
-    #this is the networking part plz help chris
-    while len(assassins_list) > 0:
-        assassination_response = monitor(ia_email, ia_password, assassins_list)
+    #assassins_list = make_list("/Users/alexstoken/projects/AZMUN/assassins_list.csv")
+    assassins_list = make_list("./small_list.csv");
 
-        if(assassination_response == False):
-            print("No new messages")
-        else:
-            print(assassination_response)
-            for i, name, email, pic in enumerate(assassins_list):
-                print(email)
-                if email == assassination_response: eliminate = i
+    original_list = assassins_list[:]
 
 
-            been_killed(assassination_response, assassins_list,)
-            respond_to_kill(assassination_response, assassins_list)
-            assassins_list.pop(i)
+    mode = input("""Enter Game Mode:
+    Options - 1. start (new game, resends initial email)
+              2. original (returns the original list)
+              3. current (returns list of current participants)
+              4. monitor (just begin monitoring email)
 
-        time.sleep(5)
+    """)
+    if mode == 'start':
+        random.shuffle(assassins_list)
+        initial_email(assassins_list)
+
+    if mode == 'original': return_list(original_list,mode)
+    if mode == 'current': return_list(assassins_list,mode)
+
+
+    if mode == 'monitor':
+        while assassins_list:
+            assassination_response = monitor(ia_email, ia_password, assassins_list)
+            from_name, subject, body = assassination_response
+            if(assassination_response == False):
+                print("No new messages")
+            else:
+                for i, name, email, pic in enumerate(assassins_list):
+
+                    if email == assassination_response: eliminate = i
+
+
+                been_killed(assassination_response, assassins_list,)
+                respond_to_kill(assassination_response, assassins_list)
+                assassins_list.pop(i)
+                assassins_list
+
+            time.sleep(5)
 
 
 try:
